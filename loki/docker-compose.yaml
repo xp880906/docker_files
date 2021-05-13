@@ -1,0 +1,19 @@
+version: '3.1'
+
+services:
+  
+  loki:
+    image: grafana/loki
+    container_name: loki
+    volumes:
+      - ./data/loki:/loki
+      - ./local-config.yaml:/etc/loki/local-config.yaml
+    command: -target=all -config.file=/etc/loki/local-config.yaml
+    ports:
+      - 3100:3100
+
+networks:
+  default:
+    external:
+      name: bridge_default
+

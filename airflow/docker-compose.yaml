@@ -1,0 +1,37 @@
+version: '3.1'
+
+services:
+
+  airflow_webserver:
+    image: apache/airflow
+    container_name: webserver
+    ports:
+      - 8080:8080
+    volumes:
+        - $PWD/dags:/opt/airflow/dags
+        - $PWD/logs:/opt/airflow/logs
+        - $PWD/plugins:/opt/airflow/plugins
+        - $PWD/airflow.cfg:/opt/airflow/airflow.cfg
+    depends_on:
+      - db
+    networks:
+      - airflow
+    command:
+        webserver 
+
+  db:
+    image: postgres:latest
+    ports:
+      - 5432:5432
+    volumes:
+      - $PWD/postgres:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: airflow 
+      POSTGRES_PASSWORD: 123456
+      POSTGRES_DB: airflow
+    networks:
+      - airflow
+
+networks:
+  airflow:
+    driver: bridge

@@ -1,0 +1,68 @@
+version: "3.8"
+
+networks:
+  service_group_shadow:
+    external: false
+
+x-service-group-common:
+  &service-group-common
+  restart: always
+  volumes:
+    - /etc/localtime:/etc/localtime:ro
+  networks:
+    - service_group_shadow
+
+services:
+
+  nala_be:
+    <<: *service-group-common
+    image: harbor.brain.niceprivate.com/brain/nala_be:0.0.7
+    environment:
+      - PYTHONUNBUFFERED=true
+      - NALA_BE_DEBUG=false
+      - NALA_BE_PORT=8013
+      - NALA_BE_WIDGETS_SENTRY_DSN=
+      - NALA_BE_REDIS_RDB_RECSYS_CACHE_DSN=redis://sm-rdb.recommend.niceprivate.com:26386
+      - NALA_BE_REDIS_RDB_RECSYS_CACHE_POOL_SIZE=8
+    labels:
+      - traefik.enable=true
+      - traefik.http.middlewares.MiddlewareCompress.compress
+      - traefik.http.routers.RouterNalaBe.entryPoints=http_00_nala_be
+      - traefik.http.routers.RouterNalaBe.rule=PathPrefix(`/`)
+      - traefik.http.routers.RouterNalaBe.middlewares=MiddlewareCompress
+      - traefik.http.routers.RouterNalaBe.service=ServiceNalaBe
+      - traefik.http.services.ServiceNalaBe.loadBalancer.passHostHeader=true
+      - traefik.http.services.ServiceNalaBe.loadbalancer.server.port=8013
+
+  gateway:
+    image: traefik:2.4.8
+    command:
+      - --accesslog=true
+      - --api.insecure=true
+      - --entrypoints.http_00_nala_be.address=:8013         # nala_be
+      - --entrypoints.traefik.address=:8080
+      - --entryPoints.metrics.address=:8082
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --metrics.prometheus=true
+      - --metrics.prometheus.buckets=0.100000,0.300000,1.200000,5.000000
+      - --metrics.prometheus.addEntryPointsLabels=true
+      - --metrics.prometheus.addServicesLabels=true
+      - --metrics.prometheus.entryPoint=metrics
+      - --metrics.influxdb=true
+      - --metrics.influxdb.address=influx.brain.niceprivate.com:80
+      - --metrics.influxdb.protocol=http
+      - --metrics.influxdb.database=traefik
+      - --metrics.influxdb.retentionPolicy=two_hours
+    depends_on:
+      - nala_be
+    restart: always
+    networks:
+      - service_group_shadow
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /var/run/docker.sock:/var/run/docker.sock:Z
+    ports:
+      - 8013:8013
+      - 8081:8080
+      - 8083:8082
