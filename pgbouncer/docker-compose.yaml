@@ -1,0 +1,18 @@
+version: "3.7"
+
+services:
+
+  pgbouncer:
+    image: edoburu/pgbouncer:1.15.0
+    restart: always
+    ports:
+      - 6432:5432
+    environment:
+      - DATABASE_URL=postgres://pg:pg123@postgres:5432/kkgoo
+      - POOL_MODE=session
+      - MAX_CLIENT_CONN=1000
+
+networks:
+  default:
+    external:
+      name: bridge_default

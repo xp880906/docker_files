@@ -1,0 +1,39 @@
+version: '3.1'
+
+services:
+
+  redmine:
+    image: redmine
+    ports:
+      - 8080:3000
+    environment:
+      REDMINE_DB_POSTGRES: db
+      REDMINE_DB_PASSWORD: 123456
+      REDMINE_DB_USERNAME: redmine
+      REDMINE_SECRET_KEY_BASE: supersecretkey
+      REDMINE_PLUGINS_MIGRATE: 1
+    volumes:
+      - $PWD/data:/usr/src/redmine/files
+      - $PWD/conf/configuration.yml:/usr/src/redmine/config/configuration.yml
+      - $PWD:/opt/repositories
+    depends_on:
+      - db
+    networks:
+      - redmine
+
+  db:
+    image: postgres:latest
+    ports:
+      - 5432:5432
+    volumes:
+      - $PWD/postgres:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: redmine
+      POSTGRES_PASSWORD: 123456
+      POSTGRES_DB: redmine
+    networks:
+      - redmine
+
+networks:
+  redmine:
+    driver: bridge

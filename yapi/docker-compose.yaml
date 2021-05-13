@@ -1,0 +1,34 @@
+version: '3.7'
+
+services:
+  yapi:
+    image: yapi:1.9.2
+    container_name: yapi
+    environment:
+      - HOME=/home
+    restart: always
+    ports:
+      - 3100:3100
+    volumes:
+      - ./logs/yapi.log:/home/vendors/log
+      - ./config.json:/api/config.json
+    command: node /api/vendors/server/app.js
+    depends_on:
+      - mongo
+    networks:
+      - yapi
+
+  mongo:
+    image: mongo
+    container_name: mongo
+    restart: always
+    ports:
+      - 27017:27017
+    volumes:
+      - ./data/mongodb:/data/db
+    networks:
+      - yapi
+    
+networks:
+  yapi:
+    driver: bridge

@@ -1,0 +1,19 @@
+version: '3.5'
+
+services:
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    ports:
+        - 6379:6379
+    volumes:
+      - $PWD/data:/data
+    networks: 
+      - local_service
+
+networks:
+  local_service:
+    name: local_service
+    driver: bridge
+

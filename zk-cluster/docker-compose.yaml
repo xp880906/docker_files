@@ -1,0 +1,61 @@
+version: '3.5'
+
+services:
+  zoo1:
+    image: zookeeper
+    restart: always
+    ports:
+      - 2181:2181
+    environment:
+      ZOO_MY_ID: 1
+      ZOO_SERVERS: server.1=0.0.0.0:2888:3888;2181 server.2=zoo2:2888:3888;2181 server.3=zoo3:2888:3888;2181
+    container_name: zoo1
+    hostname: zoo1
+    networks:
+      - zk_cluster
+    volumes:
+      - $PWD/data/zk1/data:/data:Z
+      - $PWD/data/zk1/datalog:/datalog:Z
+      - $PWD/data/zk1/logs/:/logs:Z
+      - $PWD/conf/zookeeper:/conf:Z
+
+  zoo2:
+    image: zookeeper
+    restart: always
+    ports:
+      - 2182:2181
+    environment:
+      ZOO_MY_ID: 2
+      ZOO_SERVERS: server.1=zoo1:2888:3888;2181 server.2=0.0.0.0:2888:3888;2181 server.3=zoo3:2888:3888;2181
+    container_name: zoo2
+    hostname: zoo2
+    networks:
+      - zk_cluster
+    volumes:
+      - $PWD/data/zk2/data:/data:Z
+      - $PWD/data/zk2/datalog:/datalog:Z
+      - $PWD/data/zk2/logs/:/logs:Z
+      - $PWD/conf/zookeeper:/conf:Z
+
+  zoo3:
+    image: zookeeper
+    restart: always
+    ports:
+      - 2183:2181
+    environment:
+      ZOO_MY_ID: 3
+      ZOO_SERVERS: server.1=zoo1:2888:3888;2181 server.2=zoo2:2888:3888;2181 server.3=0.0.0.0:2888:3888;2181
+    container_name: zoo3
+    hostname: zoo3
+    networks:
+      - zk_cluster
+    volumes:
+      - $PWD/data/zk3/data:/data:Z
+      - $PWD/data/zk3/datalog:/datalog:Z
+      - $PWD/data/zk3/logs/:/logs:Z
+      - $PWD/conf/zookeeper:/conf:Z
+
+networks:
+  zk_cluster:
+    name: zk_cluster
+    driver: bridge
