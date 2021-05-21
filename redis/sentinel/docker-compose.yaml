@@ -1,0 +1,72 @@
+version: '3.8'
+
+services:
+
+  redis1:
+    image: redis:latest
+    container_name: redis1
+    restart: always
+    network_mode: host
+    volumes:
+      - /home/nice/brain/workspace/xupeng/data/redis_sentinel/data1:/data:Z
+    command:
+      redis-server --port 6379
+
+  redis2:
+    image: redis:latest
+    container_name: redis2
+    restart: always
+    network_mode: host
+    volumes:
+      - /home/nice/brain/workspace/xupeng/data/redis_sentinel/data2:/data:Z
+    command:
+      redis-server --port 6380 --replicaof b-brain-dev01 6379
+
+  redis3:
+    image: redis:latest
+    container_name: redis3
+    restart: always
+    network_mode: host
+    volumes:
+      - /home/nice/brain/workspace/xupeng/data/redis_sentinel/data3:/data:Z
+    command:
+      redis-server --port 6381 --replicaof b-brain-dev01 6379
+
+  sentinel1:
+    image: bitnami/redis-sentinel:latest
+    container_name: sentinel1
+    restart: always
+    network_mode: host
+    environment:
+      - REDIS_MASTER_HOST=b-brain-dev01
+      - REDIS_SENTINEL_PORT_NUMBER=26379
+    depends_on:
+      - redis1
+      - redis2
+      - redis3
+
+  sentine2:
+    image: bitnami/redis-sentinel:latest
+    container_name: sentine2
+    restart: always
+    network_mode: host
+    environment:
+      - REDIS_MASTER_HOST=b-brain-dev01
+      - REDIS_SENTINEL_PORT_NUMBER=26380
+    depends_on:
+      - redis1
+      - redis2
+      - redis3
+
+  sentinel3:
+    image: bitnami/redis-sentinel:latest
+    container_name: sentinel3
+    restart: always
+    network_mode: host
+    environment:
+      - REDIS_MASTER_HOST=b-brain-dev01
+      - REDIS_SENTINEL_PORT_NUMBER=26381
+    depends_on:
+      - redis1
+      - redis2
+      - redis3
