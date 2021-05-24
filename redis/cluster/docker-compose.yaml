@@ -1,0 +1,72 @@
+version: '3.8'
+
+x-redis-cluster-common:
+  &redis-cluster-common
+  image: redis:latest
+  restart: always
+  network_mode: host
+
+
+services:
+
+  redis1:
+    container_name: redis1
+    <<: *redis-cluster-common
+    volumes:
+      - $PWD/redis.conf:/usr/local/etc/redis/redis.conf
+      - /home/nice/brain/workspace/xupeng/data/redis_cluster/data1:/data:Z
+    command:
+      redis-server /usr/local/etc/redis/redis.conf --port 6379
+
+  redis2:
+    container_name: redis2
+    <<: *redis-cluster-common
+    volumes:
+      - $PWD/redis.conf:/usr/local/etc/redis/redis.conf
+      - /home/nice/brain/workspace/xupeng/data/redis_cluster/data2:/data:Z
+    command:
+      redis-server /usr/local/etc/redis/redis.conf --port 6479
+
+  redis3:
+    container_name: redis3
+    <<: *redis-cluster-common
+    volumes:
+      - $PWD/redis.conf:/usr/local/etc/redis/redis.conf
+      - /home/nice/brain/workspace/xupeng/data/redis_cluster/data3:/data:Z
+    command:
+      redis-server /usr/local/etc/redis/redis.conf --port 6579
+
+  redis4:
+    container_name: redis4
+    <<: *redis-cluster-common
+    volumes:
+      - $PWD/redis.conf:/usr/local/etc/redis/redis.conf
+      - /home/nice/brain/workspace/xupeng/data/redis_cluster/data4:/data:Z
+    command:
+      redis-server /usr/local/etc/redis/redis.conf --port 6380
+
+  redis5:
+    container_name: redis5
+    <<: *redis-cluster-common
+    volumes:
+      - $PWD/redis.conf:/usr/local/etc/redis/redis.conf
+      - /home/nice/brain/workspace/xupeng/data/redis_cluster/data5:/data:Z
+    command:
+      redis-server /usr/local/etc/redis/redis.conf --port 6480
+
+  redis6:
+    container_name: redis6
+    <<: *redis-cluster-common
+    volumes:
+      - $PWD/redis.conf:/usr/local/etc/redis/redis.conf
+      - /home/nice/brain/workspace/xupeng/data/redis_cluster/data6:/data:Z
+    command:
+      redis-server /usr/local/etc/redis/redis.conf --port 6580
+
+  redis_cluster_proxy:
+    image: xp880906/redis-cluster-proxy:1.0-beta2
+    container_name: redis_cluster_proxy
+    restart: always
+    network_mode: host
+    command:
+      --port 26379 b-brain-dev01.niceprivate.com:6379 b-brain-dev01.niceprivate.com:6479 b-brain-dev01.niceprivate.com:6579
